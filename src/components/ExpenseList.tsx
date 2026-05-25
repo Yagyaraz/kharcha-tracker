@@ -8,10 +8,8 @@ import { ExpenseForm } from "./ExpenseForm";
 import { ExpenseHistoryModal } from "./ExpenseHistoryModal";
 import clsx from "clsx";
 
-export function ExpenseList({ initialExpenses }: { initialExpenses: Expense[] }) {
-  const [expenses] = useState<Expense[]>(initialExpenses);
+export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Expense[] }) {
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [spenderFilter, setSpenderFilter] = useState<string>("All");
   const [sortBy, setSortBy] = useState<"date" | "amount">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -25,9 +23,6 @@ export function ExpenseList({ initialExpenses }: { initialExpenses: Expense[] })
     
     if (search) {
       result = result.filter(e => e.title.toLowerCase().includes(search.toLowerCase()));
-    }
-    if (categoryFilter !== "All") {
-      result = result.filter(e => e.category === categoryFilter);
     }
     if (spenderFilter !== "All") {
       result = result.filter(e => e.spend_by === spenderFilter);
@@ -44,9 +39,8 @@ export function ExpenseList({ initialExpenses }: { initialExpenses: Expense[] })
     });
     
     return result;
-  }, [expenses, search, categoryFilter, spenderFilter, sortBy, sortOrder]);
+  }, [expenses, search, spenderFilter, sortBy, sortOrder]);
 
-  const categories = ["All", "Food", "Travel", "Shopping", "Bills", "Other"];
   const spenders = ["All", "Yagya", "Ramesh"];
 
   const handleEdit = (expense: Expense) => {
@@ -75,13 +69,6 @@ export function ExpenseList({ initialExpenses }: { initialExpenses: Expense[] })
           </div>
           <div className="flex gap-2">
             <select 
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {categories.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{c}</option>)}
-            </select>
-            <select 
               value={spenderFilter}
               onChange={(e) => setSpenderFilter(e.target.value)}
               className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -109,7 +96,6 @@ export function ExpenseList({ initialExpenses }: { initialExpenses: Expense[] })
               <th className="p-4 cursor-pointer hover:text-blue-500 transition-colors" onClick={() => { setSortBy("amount"); setSortOrder(sortOrder === "asc" ? "desc" : "asc") }}>
                 <div className="flex items-center gap-1">Amount {sortBy === "amount" && <ArrowUpDown className="w-3 h-3"/>}</div>
               </th>
-              <th className="p-4">Category</th>
               <th className="p-4">Spender</th>
               <th className="p-4 cursor-pointer hover:text-blue-500 transition-colors" onClick={() => { setSortBy("date"); setSortOrder(sortOrder === "asc" ? "desc" : "asc") }}>
                 <div className="flex items-center gap-1">Date {sortBy === "date" && <ArrowUpDown className="w-3 h-3"/>}</div>
@@ -153,12 +139,7 @@ export function ExpenseList({ initialExpenses }: { initialExpenses: Expense[] })
                     </div>
                   </td>
                   <td className="p-4 font-bold text-slate-700 dark:text-slate-200">
-                    ₹{expense.amount.toLocaleString()}
-                  </td>
-                  <td className="p-4">
-                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                      {expense.category}
-                    </span>
+                    रु.{expense.amount.toLocaleString()}
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2 text-sm">
@@ -172,13 +153,21 @@ export function ExpenseList({ initialExpenses }: { initialExpenses: Expense[] })
                     {format(new Date(expense.date), "MMM d, yyyy")}
                   </td>
                   <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2">
                       {expense.is_edited && (
-                        <button onClick={() => setHistoryExpenseId(expense.id)} className="p-1.5 text-slate-400 hover:text-purple-500 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors" title="View History">
+                        <button
+                          onClick={() => setHistoryExpenseId(expense.id)}
+                          className="p-1.5 rounded-lg bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:hover:bg-purple-500/30 transition-colors"
+                          title="View Edit History"
+                        >
                           <History className="w-4 h-4" />
                         </button>
                       )}
-                      <button onClick={() => handleEdit(expense)} className="p-1.5 text-slate-400 hover:text-emerald-500 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors" title="Edit">
+                      <button
+                        onClick={() => handleEdit(expense)}
+                        className="p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:hover:bg-blue-500/30 transition-colors"
+                        title="Edit Expense"
+                      >
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </div>

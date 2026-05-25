@@ -3,10 +3,10 @@ CREATE TABLE expenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     amount NUMERIC NOT NULL,
-    category TEXT NOT NULL,
     photo_url TEXT,
     spend_by TEXT NOT NULL,
     is_edited BOOLEAN DEFAULT false,
+    edit_reason TEXT,
     date DATE DEFAULT CURRENT_DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -18,9 +18,9 @@ CREATE TABLE expense_history (
     expense_id UUID NOT NULL REFERENCES expenses(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     amount NUMERIC NOT NULL,
-    category TEXT NOT NULL,
     photo_url TEXT,
     spend_by TEXT NOT NULL,
+    edit_reason TEXT,
     date DATE,
     version_number INTEGER NOT NULL,
     edited_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

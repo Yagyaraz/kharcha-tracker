@@ -140,7 +140,7 @@ export function ExpenseForm({ expense, onClose }: { expense: Expense | null, onC
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Amount (₹) <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium mb-1">Amount (रु.) <span className="text-red-500">*</span></label>
                 <input 
                   type="number" 
                   step="0.01"
@@ -164,21 +164,18 @@ export function ExpenseForm({ expense, onClose }: { expense: Expense | null, onC
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Category <span className="text-red-500">*</span></label>
-                <select 
-                  name="category" 
-                  required 
-                  defaultValue={expense?.category || "Other"}
-                  className="w-full p-3 bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow appearance-none"
-                >
-                  <option value="Food" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Food</option>
-                  <option value="Travel" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Travel</option>
-                  <option value="Shopping" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Shopping</option>
-                  <option value="Bills" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Bills</option>
-                  <option value="Other" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Other</option>
-                </select>
-              </div>
+              {expense && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">Reason for editing <span className="text-red-500">*</span></label>
+                  <input 
+                    name="edit_reason" 
+                    required 
+                    defaultValue={expense?.edit_reason || ""}
+                    className="w-full p-3 bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+                    placeholder="Why are you editing this?"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium mb-1">Spend By <span className="text-red-500">*</span></label>
