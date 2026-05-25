@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-900: #1e3a8a;
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #020617;
+    --foreground: #f8fafc;
+    --card: #0f172a;
+    --card-foreground: #f8fafc;
+    --border: #1e293b;
+    --input: #1e293b;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 1rem;
+}
