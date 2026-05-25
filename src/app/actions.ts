@@ -19,14 +19,11 @@ export async function getDashboardStats() {
   let grandTotal = 0;
   let totalYagya = 0;
   let totalRamesh = 0;
-  const categoryTotals: Record<string, number> = {};
   
   exps.forEach(exp => {
     grandTotal += Number(exp.amount);
     if (exp.spend_by === "Yagya") totalYagya += Number(exp.amount);
     if (exp.spend_by === "Ramesh") totalRamesh += Number(exp.amount);
-    
-    categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + Number(exp.amount);
   });
 
   return {
@@ -34,7 +31,6 @@ export async function getDashboardStats() {
     totalYagya,
     totalRamesh,
     totalCount: exps.length,
-    categoryTotals,
     expenses: exps // we'll use this for recent activity or further monthly calcs
   };
 }
@@ -69,7 +65,6 @@ export async function getExpenseHistory(expenseId: string) {
 export async function addExpense(formData: FormData) {
   const title = formData.get("title") as string;
   const amount = Number(formData.get("amount"));
-  const category = formData.get("category") as string;
   const spend_by = formData.get("spend_by") as string;
   const date = formData.get("date") as string || new Date().toISOString().split('T')[0];
   const photo_url = formData.get("photo_url") as string | null;
@@ -77,7 +72,6 @@ export async function addExpense(formData: FormData) {
   const { error } = await supabase.from("expenses").insert({
     title,
     amount,
-    category,
     spend_by,
     date,
     photo_url,
@@ -108,19 +102,19 @@ export async function editExpense(id: string, currentExpense: Expense, formData:
     expense_id: id,
     title: currentExpense.title,
     amount: currentExpense.amount,
-    category: currentExpense.category,
     spend_by: currentExpense.spend_by,
     date: currentExpense.date,
     photo_url: currentExpense.photo_url,
+    edit_reason: currentExpense.edit_reason,
     version_number: nextVersion
   });
 
   const title = formData.get("title") as string;
   const amount = Number(formData.get("amount"));
-  const category = formData.get("category") as string;
   const spend_by = formData.get("spend_by") as string;
   const date = formData.get("date") as string;
   const photo_url = formData.get("photo_url") as string | null;
+  const edit_reason = formData.get("edit_reason") as string | null;
 
   // Update expense
   const { error } = await supabase
@@ -128,10 +122,10 @@ export async function editExpense(id: string, currentExpense: Expense, formData:
     .update({
       title,
       amount,
-      category,
       spend_by,
       date,
       photo_url,
+      edit_reason,
       is_edited: true,
       updated_at: new Date().toISOString()
     })

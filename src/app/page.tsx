@@ -15,22 +15,6 @@ import clsx from "clsx";
 
 export const dynamic = 'force-dynamic';
 
-const CategoryIconMap: Record<string, any> = {
-  Food: Utensils,
-  Travel: Plane,
-  Shopping: ShoppingBag,
-  Bills: Zap,
-  Other: MoreHorizontal
-};
-
-const CategoryColorMap: Record<string, string> = {
-  Food: "bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400",
-  Travel: "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400",
-  Shopping: "bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400",
-  Bills: "bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400",
-  Other: "bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400"
-};
-
 export default async function Dashboard() {
   const stats = await getDashboardStats();
 
@@ -45,9 +29,7 @@ export default async function Dashboard() {
     );
   }
 
-  const { grandTotal, totalYagya, totalRamesh, totalCount, categoryTotals } = stats;
-  
-  const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+  const { grandTotal, totalYagya, totalRamesh, totalCount } = stats;
 
   return (
     <div className="space-y-6">
@@ -91,53 +73,7 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Category Breakdown */}
-        <div className="glass-card p-6 lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">Spends by Category</h2>
-            <CreditCard className="w-5 h-5 text-slate-400" />
-          </div>
-          
-          {sortedCategories.length > 0 ? (
-            <div className="space-y-4">
-              {sortedCategories.map(([cat, amount]) => {
-                const percent = grandTotal > 0 ? Math.round((amount / grandTotal) * 100) : 0;
-                const Icon = CategoryIconMap[cat] || MoreHorizontal;
-                const colorClass = CategoryColorMap[cat] || CategoryColorMap.Other;
-                
-                return (
-                  <div key={cat} className="flex items-center gap-4">
-                    <div className={clsx("p-3 rounded-xl", colorClass)}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between mb-1">
-                        <span className="font-medium">{cat}</span>
-                        <span className="font-bold">₹{amount.toLocaleString()}</span>
-                      </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
-                        <div 
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-out"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="w-10 text-right text-sm text-slate-500 font-medium">
-                      {percent}%
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="py-8 text-center text-slate-500">
-              No category data yet.
-            </div>
-          )}
-        </div>
-
-        {/* Quick Summary / Mini Report */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card p-6">
           <h2 className="text-xl font-bold mb-6">Monthly Report</h2>
           <div className="space-y-6">
@@ -164,11 +100,11 @@ export default async function Dashboard() {
               <p className="text-sm text-slate-500 mb-2">Who owes whom?</p>
               {totalYagya > totalRamesh ? (
                  <p className="font-medium text-emerald-600 dark:text-emerald-400">
-                   Ramesh owes Yagya ₹{((totalYagya - totalRamesh)/2).toLocaleString()}
+                   Ramesh owes Yagya रु.{((totalYagya - totalRamesh)/2).toLocaleString()}
                  </p>
               ) : totalRamesh > totalYagya ? (
                  <p className="font-medium text-blue-600 dark:text-blue-400">
-                   Yagya owes Ramesh ₹{((totalRamesh - totalYagya)/2).toLocaleString()}
+                   Yagya owes Ramesh रु.{((totalRamesh - totalYagya)/2).toLocaleString()}
                  </p>
               ) : (
                  <p className="font-medium text-slate-600 dark:text-slate-300">
@@ -200,7 +136,7 @@ function StatCard({ title, amount, icon, color = "blue", trend }: { title: strin
       </div>
       <div>
         <div className="text-3xl font-bold flex items-baseline gap-1">
-          <span className="text-lg text-slate-400 font-normal">₹</span>
+          <span className="text-lg text-slate-400 font-normal">रु.</span>
           {amount.toLocaleString()}
         </div>
         {trend && (

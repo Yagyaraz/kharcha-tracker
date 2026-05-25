@@ -74,12 +74,14 @@ export function ExpenseHistoryModal({ expenseId, onClose }: { expenseId: string,
                       </div>
                       <div className="flex justify-between border-b border-[var(--border)] pb-1">
                         <span className="text-slate-500">Amount</span>
-                        <span className="font-medium font-bold text-slate-700 dark:text-slate-200">₹{record.amount}</span>
+                        <span className="font-medium font-bold text-slate-700 dark:text-slate-200">रु.{record.amount}</span>
                       </div>
-                      <div className="flex justify-between border-b border-[var(--border)] pb-1">
-                        <span className="text-slate-500">Category</span>
-                        <span>{record.category}</span>
-                      </div>
+                      {record.edit_reason && (
+                        <div className="flex justify-between border-b border-[var(--border)] pb-1">
+                          <span className="text-slate-500">Edit Reason</span>
+                          <span>{record.edit_reason}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between border-b border-[var(--border)] pb-1">
                         <span className="text-slate-500">Spender</span>
                         <span>{record.spend_by}</span>
