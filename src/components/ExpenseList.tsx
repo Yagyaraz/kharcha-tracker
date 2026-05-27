@@ -3,16 +3,19 @@
 import { useState, useMemo } from "react";
 import { Expense } from "@/lib/types";
 import { format } from "date-fns";
-import { Search, Filter, ArrowUpDown, Plus, History, Edit2, Receipt } from "lucide-react";
+import { Search, Filter, ArrowUpDown, Plus, History, Edit2, Receipt, ChevronLeft, ChevronRight } from "lucide-react";
 import { ExpenseForm } from "./ExpenseForm";
 import { ExpenseHistoryModal } from "./ExpenseHistoryModal";
 import clsx from "clsx";
+
+const ITEMS_PER_PAGE = 10;
 
 export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Expense[] }) {
   const [search, setSearch] = useState("");
   const [spenderFilter, setSpenderFilter] = useState<string>("All");
   const [sortBy, setSortBy] = useState<"date" | "amount">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [currentPage, setCurrentPage] = useState(1);
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -41,6 +44,24 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
     return result;
   }, [expenses, search, spenderFilter, sortBy, sortOrder]);
 
+  // Reset to page 1 when filters change
+  const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedExpenses = filteredAndSorted.slice(startIndex, endIndex);
+
+  // Reset page when filters change
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
+
+  const handleSpenderFilterChange = (value: string) => {
+    setSpenderFilter(value);
+    setCurrentPage(1);
+  };
+
   const spenders = ["All", "Yagya", "Ramesh"];
 
   const handleEdit = (expense: Expense) => {
@@ -53,6 +74,23 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
     setEditingExpense(null);
   };
 
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | "...")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (safePage > 3) pages.push("...");
+      for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) {
+        pages.push(i);
+      }
+      if (safePage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
   return (
     <div className="glass-card overflow-hidden flex flex-col min-h-[600px]">
       <div className="p-4 md:p-6 border-b border-[var(--border)] flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -63,14 +101,14 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
               type="text" 
               placeholder="Search expenses..." 
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div className="flex gap-2">
             <select 
               value={spenderFilter}
-              onChange={(e) => setSpenderFilter(e.target.value)}
+              onChange={(e) => handleSpenderFilterChange(e.target.value)}
               className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {spenders.map(s => <option key={s} value={s} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{s}</option>)}
@@ -104,8 +142,8 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
             </tr>
           </thead>
           <tbody>
-            {filteredAndSorted.length > 0 ? (
-              filteredAndSorted.map(expense => (
+            {paginatedExpenses.length > 0 ? (
+              paginatedExpenses.map(expense => (
                 <tr key={expense.id} className="border-b border-[var(--border)] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                   <td className="p-4">
                     {expense.photo_url ? (
@@ -187,6 +225,69 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {filteredAndSorted.length > 0 && (
+        <div className="p-4 md:p-6 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Showing <span className="font-medium text-slate-700 dark:text-slate-200">{startIndex + 1}</span> to{" "}
+            <span className="font-medium text-slate-700 dark:text-slate-200">{Math.min(endIndex, filteredAndSorted.length)}</span> of{" "}
+            <span className="font-medium text-slate-700 dark:text-slate-200">{filteredAndSorted.length}</span> expenses
+          </p>
+
+          <div className="flex items-center gap-1.5">
+            {/* Previous button */}
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={safePage === 1}
+              className={clsx(
+                "p-2 rounded-lg border transition-all duration-200",
+                safePage === 1
+                  ? "border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                  : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 dark:hover:bg-blue-500/10 dark:hover:border-blue-500/30 dark:hover:text-blue-400"
+              )}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Page numbers */}
+            {getPageNumbers().map((page, idx) =>
+              page === "..." ? (
+                <span key={`dots-${idx}`} className="px-2 text-slate-400 dark:text-slate-500 text-sm select-none">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={clsx(
+                    "min-w-[36px] h-9 rounded-lg text-sm font-medium transition-all duration-200",
+                    safePage === page
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  )}
+                >
+                  {page}
+                </button>
+              )
+            )}
+
+            {/* Next button */}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={safePage === totalPages}
+              className={clsx(
+                "p-2 rounded-lg border transition-all duration-200",
+                safePage === totalPages
+                  ? "border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                  : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 dark:hover:bg-blue-500/10 dark:hover:border-blue-500/30 dark:hover:text-blue-400"
+              )}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {isFormOpen && <ExpenseForm expense={editingExpense} onClose={closeForm} />}
       {historyExpenseId && <ExpenseHistoryModal expenseId={historyExpenseId} onClose={() => setHistoryExpenseId(null)} />}

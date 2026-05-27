@@ -1,6 +1,5 @@
 import { getDashboardStats } from "./actions";
 import { 
-  IndianRupee, 
   Users, 
   Receipt,
   TrendingUp,
@@ -43,7 +42,7 @@ export default async function Dashboard() {
         <StatCard 
           title="Grand Total" 
           amount={grandTotal} 
-          icon={<IndianRupee className="w-5 h-5" />} 
+          icon={<span className="text-base font-bold">रु.</span>} 
           trend="+12%" 
           color="blue"
         />
