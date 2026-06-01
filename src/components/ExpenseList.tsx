@@ -20,6 +20,7 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [historyExpenseId, setHistoryExpenseId] = useState<string | null>(null);
+  const [historyExpense, setHistoryExpense] = useState<Expense | null>(null);
 
   const filteredAndSorted = useMemo(() => {
     let result = [...expenses];
@@ -194,7 +195,7 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
                     <div className="flex items-center justify-end gap-2">
                       {expense.is_edited && (
                         <button
-                          onClick={() => setHistoryExpenseId(expense.id)}
+                          onClick={() => { setHistoryExpenseId(expense.id); setHistoryExpense(expense); }}
                           className="p-1.5 rounded-lg bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:hover:bg-purple-500/30 transition-colors"
                           title="View Edit History"
                         >
@@ -290,7 +291,7 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
       )}
 
       {isFormOpen && <ExpenseForm expense={editingExpense} onClose={closeForm} />}
-      {historyExpenseId && <ExpenseHistoryModal expenseId={historyExpenseId} onClose={() => setHistoryExpenseId(null)} />}
+      {historyExpenseId && historyExpense && <ExpenseHistoryModal expenseId={historyExpenseId} currentExpense={historyExpense} onClose={() => { setHistoryExpenseId(null); setHistoryExpense(null); }} />}
     </div>
   );
 }
