@@ -230,11 +230,18 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
       {/* Pagination */}
       {filteredAndSorted.length > 0 && (
         <div className="p-4 md:p-6 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Showing <span className="font-medium text-slate-700 dark:text-slate-200">{startIndex + 1}</span> to{" "}
-            <span className="font-medium text-slate-700 dark:text-slate-200">{Math.min(endIndex, filteredAndSorted.length)}</span> of{" "}
-            <span className="font-medium text-slate-700 dark:text-slate-200">{filteredAndSorted.length}</span> expenses
-          </p>
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Showing <span className="font-medium text-slate-700 dark:text-slate-200">{startIndex + 1}</span> to{" "}
+              <span className="font-medium text-slate-700 dark:text-slate-200">{Math.min(endIndex, filteredAndSorted.length)}</span> of{" "}
+              <span className="font-medium text-slate-700 dark:text-slate-200">{filteredAndSorted.length}</span> expenses
+            </p>
+            {(search || spenderFilter !== "All") && (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Filtered Total: <span className="font-medium text-slate-700 dark:text-slate-200">रु.{filteredAndSorted.reduce((sum, e) => sum + e.amount, 0).toLocaleString()}</span>
+              </p>
+            )}
+          </div>
 
           <div className="flex items-center gap-1.5">
             {/* Previous button */}
