@@ -26,7 +26,11 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
     let result = [...expenses];
     
     if (search) {
-      result = result.filter(e => e.title.toLowerCase().includes(search.toLowerCase()));
+      const searchLower = search.toLowerCase();
+      result = result.filter(e => 
+        e.title.toLowerCase().includes(searchLower) || 
+        e.amount.toString().includes(searchLower)
+      );
     }
     if (spenderFilter !== "All") {
       result = result.filter(e => e.spend_by === spenderFilter);
