@@ -161,7 +161,7 @@ export function InviteForm({ invitors }: { invitors: Invitor[] }) {
 
       <div>
         <p className="text-center text-[#f8efd8]/70 text-sm mb-3">Live preview</p>
-        <InvitationCard sambodhan={sambodhan} inviteeName={inviteeName} />
+        <InvitationCard sambodhan={sambodhan} inviteeName={inviteeName} invitorPhone={invitorPhone} />
       </div>
     </div>
   );

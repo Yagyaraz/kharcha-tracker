@@ -28,6 +28,7 @@ export default async function InvitationCardPage({
       <InvitationCardDownload
         sambodhan={invitation.sambodhan}
         inviteeName={invitation.invitee_name}
+        invitorPhone={invitation.invitor_phone}
       />
     </div>
   );

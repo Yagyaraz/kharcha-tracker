@@ -9,9 +9,11 @@ import { InvitationCard } from "@/components/InvitationCard";
 export function InvitationCardDownload({
   sambodhan,
   inviteeName,
+  invitorPhone,
 }: {
   sambodhan: string;
   inviteeName: string;
+  invitorPhone?: string | null;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [pending, setPending] = useState(false);
@@ -62,6 +64,7 @@ export function InvitationCardDownload({
         ref={cardRef}
         sambodhan={sambodhan}
         inviteeName={inviteeName}
+        invitorPhone={invitorPhone}
         className="max-w-[560px]"
       />
 
