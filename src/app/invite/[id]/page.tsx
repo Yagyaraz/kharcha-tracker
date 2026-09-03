@@ -1,7 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Download } from "lucide-react";
-import { InvitationCard } from "@/components/InvitationCard";
+import { InvitationCardDownload } from "@/components/InvitationCardDownload";
 import { getInvitation } from "@/lib/invite";
 
 export const dynamic = "force-dynamic";
@@ -27,27 +25,10 @@ export default async function InvitationCardPage({
         </p>
       </div>
 
-        <InvitationCard
-          sambodhan={invitation.sambodhan}
-          inviteeName={invitation.invitee_name}
-          className="max-w-[560px]"
-        />
-
-      <div className="flex flex-col sm:flex-row gap-3">
-        <a
-          href={`/api/invite/${invitation.id}/download`}
-          className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium bg-[#c9a227] text-[#3b0c12] hover:bg-[#d4af37] transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Download card
-        </a>
-        <Link
-          href="/invite"
-          className="flex-1 inline-flex items-center justify-center px-5 py-3 rounded-xl font-medium border border-[#c9a227]/50 text-[#f8efd8] hover:bg-white/5 transition-colors"
-        >
-          Create another
-        </Link>
-      </div>
+      <InvitationCardDownload
+        sambodhan={invitation.sambodhan}
+        inviteeName={invitation.invitee_name}
+      />
     </div>
   );
 }

@@ -1,24 +1,35 @@
-import type { ReactNode } from "react";
+import { type ReactNode, type Ref, forwardRef } from "react";
 import clsx from "clsx";
+import { Noto_Serif_Devanagari } from "next/font/google";
 import { CalendarDays, Clock, MapPin, Phone } from "lucide-react";
 import { INVITE_COPY, formatSalutation, getInviteBody, isPersonalInvite } from "@/lib/invite-copy";
 
-export function InvitationCard({
-  sambodhan,
-  inviteeName,
-  className,
-}: {
-  sambodhan: string;
-  inviteeName: string;
-  className?: string;
-}) {
+const cardFont = Noto_Serif_Devanagari({
+  subsets: ["devanagari", "latin"],
+  weight: ["400", "600", "700"],
+});
+
+export const InvitationCard = forwardRef(function InvitationCard(
+  {
+    sambodhan,
+    inviteeName,
+    className,
+  }: {
+    sambodhan: string;
+    inviteeName: string;
+    className?: string;
+  },
+  ref: Ref<HTMLDivElement>
+) {
   const salutation = formatSalutation(sambodhan, inviteeName);
   const phones = INVITE_COPY.cafePhones;
   const body = getInviteBody(isPersonalInvite(sambodhan, inviteeName));
 
   return (
     <div
+      ref={ref}
       className={clsx(
+        cardFont.className,
         "relative w-full max-w-[520px] mx-auto overflow-hidden shadow-2xl shadow-black/50 text-[12px] sm:text-[13px] md:text-[14px]",
         className
       )}
@@ -96,7 +107,9 @@ export function InvitationCard({
       </div>
     </div>
   );
-}
+});
+
+InvitationCard.displayName = "InvitationCard";
 
 function DetailCell({
   icon,

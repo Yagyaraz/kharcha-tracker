@@ -53,6 +53,9 @@ export async function GET(
   }
 }
 
+const CARD_WIDTH = 1080;
+const CARD_HEIGHT = 1620;
+
 function InviteCardImage({
   salutation,
   phones,
@@ -73,8 +76,8 @@ function InviteCardImage({
   return (
     <div
       style={{
-        width: "100%",
-        height: "100%",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
         display: "flex",
         position: "relative",
         backgroundColor: "#070b14",
@@ -82,38 +85,77 @@ function InviteCardImage({
         color: "white",
       }}
     >
-      <img src={cafeLeftSrc} width={540} height={1620} style={{ objectFit: "cover" }} />
-      <img src={cafeRightSrc} width={540} height={1620} style={{ objectFit: "cover" }} />
       <div
         style={{
           position: "absolute",
-          inset: 0,
+          top: 0,
+          left: 0,
+          width: CARD_WIDTH,
+          height: CARD_HEIGHT,
           display: "flex",
-          backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(7,11,20,0.9), #05070d)",
+        }}
+      >
+        <img src={cafeLeftSrc} width={540} height={CARD_HEIGHT} style={{ objectFit: "cover" }} />
+        <img src={cafeRightSrc} width={540} height={CARD_HEIGHT} style={{ objectFit: "cover" }} />
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: CARD_WIDTH,
+          height: CARD_HEIGHT,
+          display: "flex",
+          backgroundColor: "rgba(7,11,20,0.72)",
+          backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(7,11,20,0.88), #05070d)",
         }}
       />
+
       <div
         style={{
           position: "absolute",
-          inset: 22,
+          top: 22,
+          left: 22,
+          width: CARD_WIDTH - 44,
+          height: CARD_HEIGHT - 44,
+          display: "flex",
+          border: "1.5px solid #d4af37",
+        }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          top: 48,
+          left: 56,
+          width: CARD_WIDTH - 112,
+          height: CARD_HEIGHT - 96,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          border: "1.5px solid #d4af37",
-          padding: "22px 36px 18px",
         }}
       >
-        <div style={{ display: "flex", color: "#e4c56a", fontSize: 36, fontWeight: 700 }}>
-          ☾            {INVITE_COPY.title}  ☾
-        </div>
-        <img src={logoSrc} width={280} height={280} style={{ objectFit: "contain", marginTop: 8 }} />
         <div
           style={{
             display: "flex",
-            marginTop: 8,
+            width: "100%",
+            justifyContent: "center",
+            color: "#e4c56a",
+            fontSize: 34,
+            fontWeight: 700,
+          }}
+        >
+          {`☾  ${INVITE_COPY.title}  ☾`}
+        </div>
+        <img src={logoSrc} width={240} height={240} style={{ objectFit: "contain", marginTop: 10 }} />
+        <div
+          style={{
+            display: "flex",
+            marginTop: 10,
             border: "1px solid #d4af37",
             borderRadius: 999,
-            padding: "6px 22px",
+            padding: "8px 24px",
             color: "#f0d78c",
             fontSize: 24,
             fontWeight: 700,
@@ -121,30 +163,53 @@ function InviteCardImage({
         >
           {salutation}
         </div>
-        <div style={{ display: "flex", marginTop: 12, color: "white", fontSize: 22, lineHeight: 1.4, textAlign: "center" }}>
+        <TextBlock top={14} size={22} color="white">
           {body.paragraph1}
-        </div>
-        <div style={{ display: "flex", marginTop: 10, color: "white", fontSize: 22, lineHeight: 1.4, textAlign: "center" }}>
+        </TextBlock>
+        <TextBlock top={10} size={22} color="white">
           {body.paragraph2}
-        </div>
-        <div style={{ display: "flex", marginTop: 10, color: "white", fontSize: 22, fontWeight: 700, lineHeight: 1.35, textAlign: "center" }}>
+        </TextBlock>
+        <TextBlock top={10} size={22} color="white" weight={700}>
           {INVITE_COPY.callToAction}
-        </div>
-        <div style={{ display: "flex", marginTop: 14, width: "100%", border: "1px solid rgba(212,175,55,0.85)" }}>
+        </TextBlock>
+        <div
+          style={{
+            display: "flex",
+            marginTop: 16,
+            width: "100%",
+            border: "1px solid rgba(212,175,55,0.85)",
+          }}
+        >
           <InfoCol label={INVITE_COPY.dateLabel} value={INVITE_COPY.dateValue} />
           <InfoCol label={INVITE_COPY.timeLabel} value={INVITE_COPY.timeValue} />
-          <InfoCol label={INVITE_COPY.placeLabel} value={INVITE_COPY.placeValue} />
+          <InfoCol label={INVITE_COPY.placeLabel} value={INVITE_COPY.placeValue} last />
         </div>
-        <div style={{ display: "flex", marginTop: 12, color: "rgba(255,255,255,0.92)", fontSize: 20, textAlign: "center" }}>
+        <TextBlock top={14} size={20} color="rgba(255,255,255,0.92)">
           {body.closing}
+        </TextBlock>
+        <div
+          style={{
+            display: "flex",
+            marginTop: 10,
+            color: "#e4c56a",
+            fontSize: 26,
+            fontWeight: 700,
+          }}
+        >
+          {`🙏 ${INVITE_COPY.welcome} 🙏`}
         </div>
-        <div style={{ display: "flex", marginTop: 8, color: "#e4c56a", fontSize: 26, fontWeight: 700 }}>
-          🙏 {INVITE_COPY.welcome} 🙏
-        </div>
-        <div style={{ display: "flex", marginTop: 10, color: "white", fontSize: 20 }}>
+        <div style={{ display: "flex", marginTop: 12, color: "white", fontSize: 20 }}>
           {phones}
         </div>
-        <div style={{ display: "flex", marginTop: 4, color: "#7d9f55", fontSize: 20, fontWeight: 700 }}>
+        <div
+          style={{
+            display: "flex",
+            marginTop: 6,
+            color: "#7d9f55",
+            fontSize: 20,
+            fontWeight: 700,
+          }}
+        >
           {INVITE_COPY.family}
         </div>
       </div>
@@ -152,19 +217,59 @@ function InviteCardImage({
   );
 }
 
-function InfoCol({ label, value }: { label: string; value: string }) {
+function TextBlock({
+  children,
+  top,
+  size,
+  color,
+  weight,
+}: {
+  children: string;
+  top: number;
+  size: number;
+  color: string;
+  weight?: number;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        marginTop: top,
+        justifyContent: "center",
+        textAlign: "center",
+        color,
+        fontSize: size,
+        fontWeight: weight ?? 400,
+        lineHeight: 1.4,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function InfoCol({
+  label,
+  value,
+  last,
+}: {
+  label: string;
+  value: string;
+  last?: boolean;
+}) {
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        flex: 1,
-        padding: "10px 12px",
-        borderRight: "1px solid rgba(212,175,55,0.5)",
+        width: "33.33%",
+        padding: "12px 14px",
+        borderRight: last ? "none" : "1px solid rgba(212,175,55,0.5)",
       }}
     >
       <div style={{ display: "flex", color: "#d4af37", fontSize: 18, fontWeight: 700 }}>{label}</div>
-      <div style={{ display: "flex", marginTop: 4, color: "white", fontSize: 18, lineHeight: 1.3 }}>{value}</div>
+      <div style={{ display: "flex", marginTop: 6, color: "white", fontSize: 18, lineHeight: 1.3 }}>{value}</div>
     </div>
   );
 }
