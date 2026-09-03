@@ -44,3 +44,26 @@ CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = '
 CREATE POLICY "Public Uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'expense_receipts');
 CREATE POLICY "Public Updates" ON storage.objects FOR UPDATE USING (bucket_id = 'expense_receipts');
 CREATE POLICY "Public Deletes" ON storage.objects FOR DELETE USING (bucket_id = 'expense_receipts');
+
+-- Invitation tables
+CREATE TABLE IF NOT EXISTS invitors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS invitations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invitor_id UUID NOT NULL REFERENCES invitors(id) ON DELETE CASCADE,
+    sambodhan TEXT NOT NULL,
+    invitee_name TEXT NOT NULL,
+    invitor_phone TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE invitors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE invitations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access to invitors" ON invitors FOR SELECT USING (true);
+CREATE POLICY "Allow public insert access to invitors" ON invitors FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public read access to invitations" ON invitations FOR SELECT USING (true);
+CREATE POLICY "Allow public insert access to invitations" ON invitations FOR INSERT WITH CHECK (true);

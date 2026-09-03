@@ -25,3 +25,27 @@ export interface ExpenseHistory {
   version_number: number;
   edited_at: string;
 }
+
+export interface Invitor {
+  id: string;
+  name: string;
+}
+
+export interface Invitation {
+  id: string;
+  invitor_id: string;
+  sambodhan: string;
+  invitee_name: string;
+  invitor_phone: string | null;
+  created_at: string;
+}
+
+export interface InvitationListItem {
+  id: string;
+  sambodhan: string;
+  invitee_name: string;
+  invited_to: string;
+  invited_by: Invitor;
+  invitor_phone: string | null;
+  created_at: string;
+}

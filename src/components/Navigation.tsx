@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Receipt, Lock } from "lucide-react";
+import { LayoutDashboard, Receipt, Lock, Mail } from "lucide-react";
 import clsx from "clsx";
 import { logout } from "@/app/actions/auth";
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Expenses", href: "/expenses", icon: Receipt },
+  { name: "Invites", href: "/invitations", icon: Mail },
 ];
 
 export function Navigation() {

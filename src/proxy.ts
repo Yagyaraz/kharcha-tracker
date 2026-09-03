@@ -8,8 +8,12 @@ export function proxy(request: NextRequest) {
     request.cookies.get(SESSION_COOKIE)?.value
   );
   const isLoginPage = pathname === "/login";
+  const isPublicInvite =
+    pathname === "/invite" ||
+    pathname.startsWith("/invite/") ||
+    pathname.startsWith("/api/invite");
 
-  if (!hasSession && !isLoginPage) {
+  if (!hasSession && !isLoginPage && !isPublicInvite) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
