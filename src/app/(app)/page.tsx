@@ -1,14 +1,8 @@
-import { getDashboardStats } from "./actions";
+import { getDashboardStats } from "@/app/actions";
 import { 
   Users, 
   Receipt,
   TrendingUp,
-  CreditCard,
-  Utensils,
-  Plane,
-  ShoppingBag,
-  Zap,
-  MoreHorizontal
 } from "lucide-react";
 import clsx from "clsx";
 

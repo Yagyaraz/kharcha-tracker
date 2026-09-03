@@ -3,8 +3,11 @@
 import { supabase } from "@/lib/supabase";
 import { Expense, ExpenseHistory } from "@/lib/types";
 import { revalidatePath } from "next/cache";
+import { requireSession } from "@/app/actions/auth";
 
 export async function getDashboardStats() {
+  await requireSession();
+
   const { data: expenses, error } = await supabase
     .from("expenses")
     .select("*");
@@ -36,6 +39,8 @@ export async function getDashboardStats() {
 }
 
 export async function getExpenses() {
+  await requireSession();
+
   const { data, error } = await supabase
     .from("expenses")
     .select("*")
@@ -49,6 +54,8 @@ export async function getExpenses() {
 }
 
 export async function getExpenseHistory(expenseId: string) {
+  await requireSession();
+
   const { data, error } = await supabase
     .from("expense_history")
     .select("*")
@@ -63,6 +70,8 @@ export async function getExpenseHistory(expenseId: string) {
 }
 
 export async function addExpense(formData: FormData) {
+  await requireSession();
+
   const title = formData.get("title") as string;
   const amount = Number(formData.get("amount"));
   const spend_by = formData.get("spend_by") as string;
@@ -87,6 +96,8 @@ export async function addExpense(formData: FormData) {
 }
 
 export async function editExpense(id: string, currentExpense: Expense, formData: FormData) {
+  await requireSession();
+
   // First fetch the current max version from history
   const { data: historyData } = await supabase
     .from("expense_history")
