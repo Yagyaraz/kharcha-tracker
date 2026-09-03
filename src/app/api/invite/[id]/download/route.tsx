@@ -2,7 +2,7 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { ImageResponse } from "next/og";
 import { getInvitation } from "@/lib/invite";
-import { INVITE_COPY, formatSalutation, getInviteBody } from "@/lib/invite-copy";
+import { INVITE_COPY, formatPhoneLine, formatSalutation, getInviteBody } from "@/lib/invite-copy";
 
 export const runtime = "nodejs";
 
@@ -30,7 +30,7 @@ export async function GET(
       (
         <InviteCardImage
           salutation={formatSalutation(invitation.sambodhan, invitation.invitee_name)}
-          phones={INVITE_COPY.cafePhones}
+          phones={formatPhoneLine(invitation.invitor_phone)}
           fontFamily={fonts.length ? "Noto Serif Devanagari" : "serif"}
           logoSrc={logo}
           cafeLeftSrc={cafeLeft}

@@ -2,7 +2,7 @@ import { type ReactNode, type Ref, forwardRef } from "react";
 import clsx from "clsx";
 import { Noto_Serif_Devanagari } from "next/font/google";
 import { CalendarDays, Clock, MapPin, Phone } from "lucide-react";
-import { INVITE_COPY, formatSalutation, getInviteBody, isPersonalInvite } from "@/lib/invite-copy";
+import { INVITE_COPY, formatPhoneLine, formatSalutation, getInviteBody, isPersonalInvite } from "@/lib/invite-copy";
 
 const cardFont = Noto_Serif_Devanagari({
   subsets: ["devanagari", "latin"],
@@ -13,16 +13,18 @@ export const InvitationCard = forwardRef(function InvitationCard(
   {
     sambodhan,
     inviteeName,
+    invitorPhone,
     className,
   }: {
     sambodhan: string;
     inviteeName: string;
+    invitorPhone?: string | null;
     className?: string;
   },
   ref: Ref<HTMLDivElement>
 ) {
   const salutation = formatSalutation(sambodhan, inviteeName);
-  const phones = INVITE_COPY.cafePhones;
+  const phones = formatPhoneLine(invitorPhone);
   const body = getInviteBody(isPersonalInvite(sambodhan, inviteeName));
 
   return (

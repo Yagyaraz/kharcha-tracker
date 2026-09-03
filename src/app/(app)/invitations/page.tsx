@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { format } from "date-fns";
-import { Mail } from "lucide-react";
+import { Mail, RefreshCw } from "lucide-react";
 import { requireSession } from "@/app/actions/auth";
 import { AddInvitorForm } from "@/components/AddInvitorForm";
 import { listInvitations } from "@/lib/invite";
@@ -37,12 +38,13 @@ export default async function InvitationsPage() {
                 <th className="px-4 py-3 font-medium">Invited by</th>
                 <th className="px-4 py-3 font-medium">Phone</th>
                 <th className="px-4 py-3 font-medium">Date</th>
+                <th className="px-4 py-3 font-medium text-right">Card</th>
               </tr>
             </thead>
             <tbody>
               {invitations.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-slate-500">
+                  <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
                     <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     No invitations yet.
                   </td>
@@ -55,6 +57,17 @@ export default async function InvitationsPage() {
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{item.invitor_phone || "—"}</td>
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
                       {format(new Date(item.created_at), "dd MMM yyyy, hh:mm a")}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end">
+                        <Link
+                          href={`/invite/${item.id}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Regenerate card
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))

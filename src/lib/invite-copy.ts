@@ -50,3 +50,15 @@ export function formatSalutation(sambodhan?: string, inviteeName?: string) {
   return `${address ? `${address} ` : ""}${name},`.replace(/\s+/g, " ").trim();
 }
 
+const NEPALI_DIGITS = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
+
+export function toNepaliDigits(value: string) {
+  return value.replace(/\d/g, (digit) => NEPALI_DIGITS[Number(digit)]);
+}
+
+export function formatPhoneLine(invitorPhone?: string | null) {
+  const extra = invitorPhone?.replace(/\D/g, "");
+  if (!extra) return INVITE_COPY.cafePhones;
+  return `${INVITE_COPY.cafePhones} | ${toNepaliDigits(extra)}`;
+}
+
