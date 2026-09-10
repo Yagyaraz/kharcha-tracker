@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Moonlight Chautari Menu</title>
+  <style>
+    @font-face {
+      font-family: "Roboto";
+      src: url("fonts/roboto.woff2") format("woff2");
+      font-weight: 400 700;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Roboto";
+      src: url("fonts/roboto-italic.woff2") format("woff2");
+      font-weight: 400;
+      font-style: italic;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Noto Serif Devanagari";
+      src: url("fonts/noto-devanagari.woff") format("woff");
+      font-weight: 600;
+      font-style: normal;
+      font-display: block;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    html, body {
+      background: #111;
+      color: #f6ead0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
+    }
+
+    body {
+      width: 210mm;
+      margin: 0 auto;
+      font-family: "Roboto", sans-serif;
+    }
+
+    .page {
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 8%, rgba(212, 175, 55, 0.16), transparent 46%),
+        radial-gradient(ellipse at 50% 100%, rgba(76, 120, 42, 0.12), transparent 42%),
+        linear-gradient(180deg, #100e0b 0%, #070706 52%, #0c0b09 100%);
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    .frame {
+      position: absolute;
+      inset: 7mm;
+      border: 0.35mm solid #d4af37;
+      pointer-events: none;
+    }
+
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: 2.2mm;
+      border: 0.18mm solid rgba(240, 215, 140, 0.55);
+    }
+
+    .corner {
+      position: absolute;
+      width: 14mm;
+      height: 14mm;
+      z-index: 2;
+    }
+    .corner span,
+    .corner::before,
+    .corner::after {
+      content: "";
+      position: absolute;
+      background: #d4af37;
+    }
+    .tl { top: 7mm; left: 7mm; }
+    .tr { top: 7mm; right: 7mm; transform: scaleX(-1); }
+    .bl { bottom: 7mm; left: 7mm; transform: scaleY(-1); }
+    .br { bottom: 7mm; right: 7mm; transform: scale(-1); }
+    .corner::before { width: 14mm; height: 0.45mm; top: 0; left: 0; }
+    .corner::after { width: 0.45mm; height: 14mm; top: 0; left: 0; }
+
+    .inner {
+      position: relative;
+      z-index: 3;
+      height: 100%;
+      padding: 11mm 13mm 12mm;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .logo-wrap {
+      width: 46mm;
+      height: 46mm;
+      margin: 0 auto 1.2mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo {
+      width: 46mm;
+      height: 46mm;
+      object-fit: contain;
+      display: block;
+    }
+
+    .eyebrow {
+      font-family: "Roboto", sans-serif;
+      letter-spacing: 0.32em;
+      font-size: 7.2pt;
+      color: #e8d48a;
+      text-transform: uppercase;
+      margin-bottom: 1.2mm;
+    }
+
+    .slogan {
+      font-family: "Noto Serif Devanagari", serif;
+      font-weight: 600;
+      font-size: 11.5pt;
+      letter-spacing: 0.18em;
+      color: #f0d78c;
+      text-transform: none;
+      margin: 0.6mm 0 1.6mm;
+    }
+
+    h1 {
+      font-family: "Roboto", sans-serif;
+      font-size: 22pt;
+      font-weight: 700;
+      letter-spacing: 0.32em;
+      color: #f3e2a8;
+      text-indent: 0.42em;
+    }
+
+    .place {
+      margin-top: 1.4mm;
+      font-style: italic;
+      font-size: 10pt;
+      color: #d7c7a0;
+    }
+
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 4mm;
+      margin: 3.2mm auto 3.6mm;
+      width: 78%;
+    }
+    .rule i {
+      flex: 1;
+      height: 0.18mm;
+      background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    }
+    .rule b {
+      width: 2.2mm;
+      height: 2.2mm;
+      transform: rotate(45deg);
+      background: #d4af37;
+      box-shadow: 0 0 0 0.7mm #100e0b, 0 0 0 0.95mm rgba(212, 175, 55, 0.7);
+    }
+
+    .cols {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8mm;
+      min-height: 0;
+      align-items: start;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 4.2mm;
+    }
+
+    .drinks .stack {
+      gap: 6.2mm;
+    }
+
+    section h2 {
+      font-family: "Roboto", sans-serif;
+      font-size: 11pt;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      color: #f0d78c;
+      text-align: center;
+      text-transform: uppercase;
+      margin-bottom: 1.8mm;
+    }
+
+    section h2::before,
+    section h2::after {
+      content: "";
+      display: inline-block;
+      width: 1.6mm;
+      height: 1.6mm;
+      margin: 0 2.4mm 0.6mm;
+      background: #7eab4d;
+      transform: rotate(45deg);
+      box-shadow: 0 0 0 0.35mm #100e0b, 0 0 0 0.5mm rgba(126, 171, 77, 0.7);
+      vertical-align: middle;
+    }
+
+    .grid3,
+    .grid4 {
+      display: grid;
+      column-gap: 2mm;
+      row-gap: 1.05mm;
+      font-size: 10.4pt;
+    }
+    .grid3 { grid-template-columns: 1fr 16mm 16mm; }
+    .grid4 { grid-template-columns: 1fr 14.5mm 14.5mm 14.5mm; }
+
+    .head {
+      font-family: "Roboto", sans-serif;
+      font-size: 6.8pt;
+      letter-spacing: 0.16em;
+      color: #b7d27a;
+      text-transform: uppercase;
+      padding-bottom: 0.7mm;
+      border-bottom: 0.18mm solid rgba(212, 175, 55, 0.35);
+      margin-bottom: 0.5mm;
+    }
+
+    .name {
+      color: #f7edd8;
+      font-weight: 600;
+    }
+
+    .num, .price {
+      color: #e8c96a;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .row {
+      display: flex;
+      align-items: baseline;
+      gap: 2.2mm;
+      font-size: 10.7pt;
+      line-height: 1.22;
+      min-height: 5.4mm;
+    }
+
+    .row .name {
+      max-width: 74%;
+    }
+
+    .drinks .row {
+      font-size: 10.5pt;
+      min-height: 5.8mm;
+    }
+
+    .sub {
+      display: block;
+      font-size: 8.3pt;
+      font-style: italic;
+      color: #cbb993;
+      margin: -0.4mm 0 1.4mm;
+      line-height: 1.25;
+    }
+
+    .dots {
+      flex: 1;
+      border-bottom: 0.18mm dotted rgba(232, 201, 106, 0.42);
+      transform: translateY(-1.4mm);
+      min-width: 6mm;
+    }
+
+    .note {
+      font-size: 8.4pt;
+      font-style: italic;
+      color: #cbb993;
+      text-align: center;
+      margin-top: 0.8mm;
+    }
+
+    footer {
+      flex: 0 0 auto;
+      text-align: center;
+      margin-top: 3mm;
+    }
+
+    .phones {
+      font-family: "Roboto", sans-serif;
+      font-size: 8.4pt;
+      letter-spacing: 0.14em;
+      color: #f0d78c;
+    }
+
+    .thanks {
+      margin-top: 1mm;
+      font-style: italic;
+      font-size: 9.5pt;
+      color: #d7c7a0;
+    }
+
+    footer .slogan {
+      font-style: normal;
+      font-size: 10.5pt;
+      margin-top: 1.4mm;
+      margin-bottom: 0;
+    }
+
+    .page-mark {
+      margin-top: 0.8mm;
+      font-family: "Roboto", sans-serif;
+      font-size: 6.4pt;
+      letter-spacing: 0.28em;
+      color: rgba(240, 215, 140, 0.55);
+      text-transform: uppercase;
+    }
+
+    @media print {
+      html, body { width: 210mm; background: #070706; }
+      .page { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <div class="frame"></div>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="inner">
+      <header>
+        <div class="logo-wrap">
+          <img class="logo" src="logo-clear.png" alt="Moonlight Chautari" />
+        </div>
+        <p class="slogan">स्वाद • साथ • सम्झना</p>
+        <h1>MENU</h1>
+        <p class="place">Bhajangal, Kirtipur</p>
+        <div class="rule" aria-hidden="true"><i></i><b></b><i></i></div>
+      </header>
+
+      <div class="cols">
+        <div class="stack">
+          <section>
+            <h2>Chowmein</h2>
+            <div class="grid3">
+              <div class="head"></div>
+              <div class="head num">Half</div>
+              <div class="head num">Full</div>
+              <div class="name">Veg Chowmein</div><div class="num">60</div><div class="num">110</div>
+              <div class="name">Chicken Chowmein</div><div class="num">80</div><div class="num">150</div>
+              <div class="name">Buff Chowmein</div><div class="num">70</div><div class="num">130</div>
+            </div>
+          </section>
+
+          <section>
+            <h2>Fried Rice</h2>
+            <div class="grid3">
+              <div class="head"></div>
+              <div class="head num">Half</div>
+              <div class="head num">Full</div>
+              <div class="name">Veg Fried Rice</div><div class="num">70</div><div class="num">130</div>
+              <div class="name">Egg Fried Rice</div><div class="num">80</div><div class="num">150</div>
+              <div class="name">Chicken Fried Rice</div><div class="num">90</div><div class="num">170</div>
+            </div>
+          </section>
+
+          <section>
+            <h2>Momo</h2>
+            <div class="grid4">
+              <div class="head"></div>
+              <div class="head num">Steam</div>
+              <div class="head num">Fry</div>
+              <div class="head num">Jhol</div>
+              <div class="name">Veg Momo</div><div class="num">110</div><div class="num">130</div><div class="num">150</div>
+              <div class="name">Buff Momo</div><div class="num">120</div><div class="num">140</div><div class="num">160</div>
+              <div class="name">Chicken Momo</div><div class="num">140</div><div class="num">160</div><div class="num">180</div>
+            </div>
+          </section>
+
+          <section>
+            <h2>Sides</h2>
+            <div class="row"><span class="name">Boiled Egg</span><span class="dots"></span><span class="price">Rs. 35</span></div>
+            <div class="row"><span class="name">Bread</span><span class="dots"></span><span class="price">Rs. 60</span></div>
+            <div class="row"><span class="name">Peanut Sadheko</span><span class="dots"></span><span class="price">Rs. 85</span></div>
+          </section>
+        </div>
+
+        <div class="stack">
+          <section>
+            <h2>Rolls</h2>
+            <div class="row"><span class="name">Veg Roll</span><span class="dots"></span><span class="price">Rs. 130</span></div>
+            <div class="row"><span class="name">Egg Roll</span><span class="dots"></span><span class="price">Rs. 160</span></div>
+            <div class="row"><span class="name">Chicken Roll</span><span class="dots"></span><span class="price">Rs. 180</span></div>
+            <div class="row"><span class="name">Double Egg Roll</span><span class="dots"></span><span class="price">Rs. 200</span></div>
+            <div class="row"><span class="name">Double Chicken Roll</span><span class="dots"></span><span class="price">Rs. 220</span></div>
+          </section>
+
+          <section>
+            <h2>Specials</h2>
+            <div class="row"><span class="name">Buff Sausage</span><span class="dots"></span><span class="price">Rs. 40</span></div>
+            <div class="row"><span class="name">Chicken Sausage</span><span class="dots"></span><span class="price">Rs. 45</span></div>
+            <div class="row"><span class="name">Veg Chatpate</span><span class="dots"></span><span class="price">Rs. 80</span></div>
+            <div class="row"><span class="name">Aloo Chop</span><span class="dots"></span><span class="price">Rs. 80</span></div>
+            <div class="row"><span class="name">Pakauda</span><span class="dots"></span><span class="price">Rs. 90</span></div>
+            <div class="row"><span class="name">French Fries</span><span class="dots"></span><span class="price">Rs. 100</span></div>
+            <div class="row"><span class="name">Mushroom Aloo</span><span class="dots"></span><span class="price">Rs. 130</span></div>
+          </section>
+        </div>
+      </div>
+
+      <footer>
+        <p class="phones">9848441812 &nbsp;|&nbsp; 9848381678</p>
+        <p class="slogan">स्वाद • साथ • सम्झना</p>
+        <p class="page-mark">Kitchen · Page 1</p>
+      </footer>
+    </div>
+  </article>
+
+  <article class="page drinks">
+    <div class="frame"></div>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="inner">
+      <header>
+        <div class="logo-wrap">
+          <img class="logo" src="logo-clear.png" alt="Moonlight Chautari" />
+        </div>
+        <p class="eyebrow">Moonlight Chautari</p>
+        <h1>DRINKS</h1>
+        <p class="place">Bhajangal, Kirtipur</p>
+        <div class="rule" aria-hidden="true"><i></i><b></b><i></i></div>
+      </header>
+
+      <div class="cols">
+        <div class="stack">
+          <section>
+            <h2>Tea</h2>
+            <div class="row"><span class="name">Black Tea</span><span class="dots"></span><span class="price">Rs. 25</span></div>
+            <div class="row"><span class="name">Lemon Tea</span><span class="dots"></span><span class="price">Rs. 30</span></div>
+            <div class="row"><span class="name">Milk Tea</span><span class="dots"></span><span class="price">Rs. 35</span></div>
+            <div class="row"><span class="name">Black Masala / Ginger Tea</span><span class="dots"></span><span class="price">Rs. 35</span></div>
+            <div class="row"><span class="name">Lemon Ginger Tea</span><span class="dots"></span><span class="price">Rs. 40</span></div>
+            <div class="row"><span class="name">Milk Masala Tea</span><span class="dots"></span><span class="price">Rs. 50</span></div>
+            <div class="row"><span class="name">Matka Tea</span><span class="dots"></span><span class="price">Rs. 70</span></div>
+          </section>
+
+          <section>
+            <h2>Healthy Drinks</h2>
+            <div class="row"><span class="name">Hot Lemon</span><span class="dots"></span><span class="price">Rs. 50</span></div>
+            <div class="row"><span class="name">Cold Lemon</span><span class="dots"></span><span class="price">Rs. 50</span></div>
+            <div class="row"><span class="name">Hot Lemon Ginger</span><span class="dots"></span><span class="price">Rs. 80</span></div>
+            <div class="row"><span class="name">Hot Lemon with Honey</span><span class="dots"></span><span class="price">Rs. 110</span></div>
+          </section>
+
+          <section>
+            <h2>Lassi</h2>
+            <div class="row"><span class="name">Plain Lassi</span><span class="dots"></span><span class="price">Rs. 120</span></div>
+            <div class="row"><span class="name">Banana Lassi</span><span class="dots"></span><span class="price">Rs. 160</span></div>
+            <div class="row"><span class="name">Mango Lassi</span><span class="dots"></span><span class="price">Rs. 160</span></div>
+            <div class="row"><span class="name">Moonlight Special Lassi</span><span class="dots"></span><span class="price">Rs. 180</span></div>
+          </section>
+        </div>
+
+        <div class="stack">
+          <section>
+            <h2>Cold Beverages</h2>
+            <div class="row"><span class="name">Lemonzaa</span><span class="dots"></span><span class="price">Rs. 60</span></div>
+            <div class="row"><span class="name">Lemonade</span><span class="dots"></span><span class="price">Rs. 70</span></div>
+            <div class="row"><span class="name">Coke / Sprite / Fanta</span><span class="dots"></span><span class="price">Rs. 70</span></div>
+            <div class="row"><span class="name">Mojito (Coke / Sprite / Fanta)</span><span class="dots"></span><span class="price">Rs. 85</span></div>
+            <div class="row"><span class="name">Mint Lemonade</span><span class="dots"></span><span class="price">Rs. 120</span></div>
+            <div class="row"><span class="name">Xtreme Energy Drink</span><span class="dots"></span><span class="price">Rs. 150</span></div>
+            <div class="row"><span class="name">Red Bull</span><span class="dots"></span><span class="price">Rs. 150</span></div>
+          </section>
+
+          <section>
+            <h2>Cigarettes</h2>
+            <div class="row"><span class="name">Shikhar Ice</span><span class="dots"></span><span class="price">Rs. 25</span></div>
+            <div class="row"><span class="name">Surya Red / Light / Arctic / Fusion</span><span class="dots"></span><span class="price">Rs. 30</span></div>
+          </section>
+
+          <section>
+            <h2>Hookah</h2>
+            <div class="row"><span class="name">Classic Flavours</span><span class="dots"></span><span class="price">Rs. 399</span></div>
+            <span class="sub">Mint · Mango · Double Apple · Litchi · 1001</span>
+            <div class="row"><span class="name">Signature Flavours</span><span class="dots"></span><span class="price">Rs. 449</span></div>
+            <span class="sub">Lady Killer · Love 66</span>
+            <div class="row"><span class="name">Deja Vu</span><span class="dots"></span><span class="price">Rs. 549</span></div>
+            <div class="row"><span class="name">Ice Pipe</span><span class="dots"></span><span class="price">Rs. 99</span></div>
+            <div class="row"><span class="name">Refill</span><span class="dots"></span><span class="price">Rs. 299</span></div>
+            <div class="row"><span class="name">Extra Coil</span><span class="dots"></span><span class="price">Rs. 49</span></div>
+            <p class="note">Ask the staff for today’s available flavours</p>
+          </section>
+        </div>
+      </div>
+
+      <footer>
+        <p class="phones">9848441812 &nbsp;|&nbsp; 9848381678</p>
+        <p class="slogan">स्वाद • साथ • सम्झना</p>
+        <p class="page-mark">Drinks · Page 2</p>
+      </footer>
+    </div>
+  </article>
+</body>
+</html>

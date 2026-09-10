@@ -42,3 +42,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# menu generator runtime
+/menu/node_modules/
+/menu/.edge-profile*/
