@@ -3,9 +3,10 @@
 import { useState, useMemo } from "react";
 import { Expense } from "@/lib/types";
 import { format } from "date-fns";
-import { Search, Filter, ArrowUpDown, Plus, History, Edit2, Receipt, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ArrowUpDown, Plus, History, Edit2, Receipt, ChevronLeft, ChevronRight, CalendarDays, TrendingUp, Scale } from "lucide-react";
 import { ExpenseForm } from "./ExpenseForm";
 import { ExpenseHistoryModal } from "./ExpenseHistoryModal";
+import { ExportButton } from "./ExportButton";
 import clsx from "clsx";
 
 const ITEMS_PER_PAGE = 10;
@@ -16,7 +17,9 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
   const [sortBy, setSortBy] = useState<"date" | "amount">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [historyExpenseId, setHistoryExpenseId] = useState<string | null>(null);
@@ -24,18 +27,24 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
 
   const filteredAndSorted = useMemo(() => {
     let result = [...expenses];
-    
+
     if (search) {
       const searchLower = search.toLowerCase();
-      result = result.filter(e => 
-        e.title.toLowerCase().includes(searchLower) || 
+      result = result.filter(e =>
+        e.title.toLowerCase().includes(searchLower) ||
         e.amount.toString().includes(searchLower)
       );
     }
     if (spenderFilter !== "All") {
       result = result.filter(e => e.spend_by === spenderFilter);
     }
-    
+    if (fromDate) {
+      result = result.filter(e => e.date >= fromDate);
+    }
+    if (toDate) {
+      result = result.filter(e => e.date <= toDate);
+    }
+
     result.sort((a, b) => {
       if (sortBy === "date") {
         const valA = new Date(a.date).getTime();
@@ -45,9 +54,9 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
         return sortOrder === "asc" ? a.amount - b.amount : b.amount - a.amount;
       }
     });
-    
+
     return result;
-  }, [expenses, search, spenderFilter, sortBy, sortOrder]);
+  }, [expenses, search, spenderFilter, fromDate, toDate, sortBy, sortOrder]);
 
   // Reset to page 1 when filters change
   const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / ITEMS_PER_PAGE));
@@ -67,7 +76,40 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
     setCurrentPage(1);
   };
 
+  const handleFromDateChange = (value: string) => {
+    setFromDate(value);
+    setCurrentPage(1);
+  };
+
+  const handleToDateChange = (value: string) => {
+    setToDate(value);
+    setCurrentPage(1);
+  };
+
+  const clearDateFilters = () => {
+    setFromDate("");
+    setToDate("");
+    setCurrentPage(1);
+  };
+
   const spenders = ["All", "Yagya", "Ramesh"];
+
+  // Investment summary from filtered expenses
+  const investmentSummary = useMemo(() => {
+    const filteredYagya = filteredAndSorted
+      .filter(e => e.spend_by === "Yagya")
+      .reduce((s, e) => s + Number(e.amount), 0);
+    const filteredRamesh = filteredAndSorted
+      .filter(e => e.spend_by === "Ramesh")
+      .reduce((s, e) => s + Number(e.amount), 0);
+    const filteredTotal = filteredYagya + filteredRamesh;
+    const yagyaPct = filteredTotal > 0 ? Math.round((filteredYagya / filteredTotal) * 100) : 0;
+    const rameshPct = filteredTotal > 0 ? Math.round((filteredRamesh / filteredTotal) * 100) : 0;
+    const halfTotal = filteredTotal / 2;
+    const settlement = Math.abs(filteredYagya - halfTotal);
+    const yagyaOwes = filteredYagya < halfTotal;
+    return { filteredYagya, filteredRamesh, filteredTotal, yagyaPct, rameshPct, settlement, yagyaOwes };
+  }, [filteredAndSorted]);
 
   const handleEdit = (expense: Expense) => {
     setEditingExpense(expense);
@@ -96,41 +138,170 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
     return pages;
   };
 
+  const hasDateFilter = fromDate || toDate;
+  const hasAnyFilter = search || spenderFilter !== "All" || hasDateFilter;
+
+
   return (
-    <div className="glass-card overflow-hidden flex flex-col min-h-[600px]">
-      <div className="p-4 md:p-6 border-b border-[var(--border)] flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col md:flex-row gap-4 flex-1">
-          <div className="relative max-w-sm w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Search expenses..." 
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+    <div className="space-y-4">
+      {/* Investment Summary Panel */}
+      <div className="glass-card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Scale className="w-5 h-5 text-blue-500" />
+          <h2 className="text-base font-semibold">Investment Summary</h2>
+          {hasAnyFilter && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
+              Filtered view
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Yagya card */}
+          <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shadow">Y</div>
+              <span className="font-medium text-sm">Yagya</span>
+            </div>
+            <div className="text-2xl font-bold">रु.{investmentSummary.filteredYagya.toLocaleString()}</div>
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex-1 bg-blue-200 dark:bg-blue-700/40 rounded-full h-2">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${investmentSummary.yagyaPct}%` }}
+                />
+              </div>
+              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 min-w-[3rem] text-right">{investmentSummary.yagyaPct}%</span>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <select 
-              value={spenderFilter}
-              onChange={(e) => handleSpenderFilterChange(e.target.value)}
-              className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {spenders.map(s => <option key={s} value={s} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{s}</option>)}
-            </select>
+
+          {/* Ramesh card */}
+          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm shadow">R</div>
+              <span className="font-medium text-sm">Ramesh</span>
+            </div>
+            <div className="text-2xl font-bold">रु.{investmentSummary.filteredRamesh.toLocaleString()}</div>
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex-1 bg-emerald-200 dark:bg-emerald-700/40 rounded-full h-2">
+                <div
+                  className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${investmentSummary.rameshPct}%` }}
+                />
+              </div>
+              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 min-w-[3rem] text-right">{investmentSummary.rameshPct}%</span>
+            </div>
+          </div>
+
+          {/* 50/50 Settlement card */}
+          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5 text-amber-500" />
+              <span className="font-medium text-sm">50/50 Settlement</span>
+            </div>
+            {investmentSummary.filteredTotal === 0 ? (
+              <p className="text-sm text-slate-400 mt-1">No expenses in selected range.</p>
+            ) : investmentSummary.settlement < 1 ? (
+              <p className="text-base font-semibold text-emerald-600 dark:text-emerald-400 mt-1">✅ All settled up!</p>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
+                  रु.{investmentSummary.settlement.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </div>
+                <p className="text-sm font-medium mt-1">
+                  {investmentSummary.yagyaOwes ? (
+                    <span className="text-blue-600 dark:text-blue-400">Yagya → pays Ramesh</span>
+                  ) : (
+                    <span className="text-emerald-600 dark:text-emerald-400">Ramesh → pays Yagya</span>
+                  )}
+                </p>
+              </>
+            )}
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+              Total: रु.{investmentSummary.filteredTotal.toLocaleString()}
+            </p>
           </div>
         </div>
-        
-        <button 
-          onClick={() => setIsFormOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap shadow-lg shadow-blue-500/30"
-        >
-          <Plus className="w-5 h-5" />
-          Add Expense
-        </button>
       </div>
 
-      <div className="flex-1 overflow-x-auto">
+      {/* Expense Table Card */}
+      <div className="glass-card overflow-hidden flex flex-col min-h-[600px]">
+        {/* Filters */}
+        <div className="p-4 md:p-6 border-b border-[var(--border)] space-y-3">
+          {/* Row 1: search + spender + add button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 flex-1">
+              <div className="relative max-w-sm w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search expenses..."
+                  value={search}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <select
+                value={spenderFilter}
+                onChange={(e) => handleSpenderFilterChange(e.target.value)}
+                className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {spenders.map(s => <option key={s} value={s} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{s}</option>)}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <ExportButton
+                expenses={filteredAndSorted}
+                summary={investmentSummary}
+                fromDate={fromDate}
+                toDate={toDate}
+              />
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors whitespace-nowrap shadow-lg shadow-blue-500/30"
+              >
+                <Plus className="w-5 h-5" />
+                Add Expense
+              </button>
+            </div>
+          </div>
+
+          {/* Row 2: Date range filter */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5 text-sm text-slate-500">
+              <CalendarDays className="w-4 h-4" />
+              <span className="whitespace-nowrap">Date range:</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="text-xs text-slate-400 whitespace-nowrap">From</label>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => handleFromDateChange(e.target.value)}
+                max={toDate || undefined}
+                className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="text-slate-400">→</span>
+              <label className="text-xs text-slate-400 whitespace-nowrap">To</label>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => handleToDateChange(e.target.value)}
+                min={fromDate || undefined}
+                className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {hasDateFilter && (
+                <button
+                  onClick={clearDateFilters}
+                  className="text-xs text-red-500 hover:text-red-700 underline underline-offset-2 transition-colors"
+                >
+                  Clear dates
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-[var(--border)] text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -303,6 +474,7 @@ export function ExpenseList({ initialExpenses: expenses }: { initialExpenses: Ex
 
       {isFormOpen && <ExpenseForm expense={editingExpense} onClose={closeForm} />}
       {historyExpenseId && historyExpense && <ExpenseHistoryModal expenseId={historyExpenseId} currentExpense={historyExpense} onClose={() => { setHistoryExpenseId(null); setHistoryExpense(null); }} />}
+      </div>
     </div>
   );
 }
