@@ -1,57 +1,95 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Expense } from "@/lib/types";
 import { addExpense, editExpense } from "@/app/actions";
-import { X, Loader2, Upload } from "lucide-react";
+import { X, Loader2, Upload, Clipboard, ImagePlus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import imageCompression from "browser-image-compression";
 
 export function ExpenseForm({ expense, onClose }: { expense: Expense | null, onClose: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+  const [isDragging, setIsDragging] = useState(false);
+  const [pasteFlash, setPasteFlash] = useState(false);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
+
   // Existing photo URL from the DB
   const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(expense?.photo_url || null);
-  
+
   // Local file selection state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
 
-  // Clean up object URL when component unmounts or preview changes
-  useEffect(() => {
-    return () => {
-      if (localPreviewUrl) {
-        URL.revokeObjectURL(localPreviewUrl);
-      }
-    };
-  }, [localPreviewUrl]);
-
-  const handlePhotoSelection = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Shared compression + preview pipeline
+  const processFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setError("Only image files are supported.");
+      return;
+    }
+    setError("");
     try {
-      setError("");
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      // Image Compression
       const options = {
         maxSizeMB: 0.2,
         maxWidthOrHeight: 1024,
         useWebWorker: true,
-        fileType: "image/jpeg"
+        fileType: "image/jpeg" as const,
       };
-      
-      const compressedFile = await imageCompression(file, options);
-      
-      // Update local state for preview
-      setSelectedFile(compressedFile);
-      setLocalPreviewUrl(URL.createObjectURL(compressedFile));
-      // Clear existing photo if a new one is selected
-      setExistingPhotoUrl(null); 
+      const compressed = await imageCompression(file, options);
+      setSelectedFile(compressed);
+      setLocalPreviewUrl(URL.createObjectURL(compressed));
+      setExistingPhotoUrl(null);
     } catch (err: any) {
       setError(err.message || "Failed to compress photo");
     }
+  }, []);
+
+  // --- File input change ---
+  const handlePhotoSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
   };
+
+  // --- Clipboard paste (document-wide) ---
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            setPasteFlash(true);
+            setTimeout(() => setPasteFlash(false), 600);
+            processFile(file);
+          }
+          break;
+        }
+      }
+    };
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [processFile]);
+
+  // --- Drag & drop ---
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+
+  // Clean up object URL
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    };
+  }, [localPreviewUrl]);
 
   const handleRemovePhoto = () => {
     setSelectedFile(null);
@@ -193,33 +231,72 @@ export function ExpenseForm({ expense, onClose }: { expense: Expense | null, onC
 
             <div>
               <label className="block text-sm font-medium mb-1">Bill Photo</label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 dark:border-slate-700 border-dashed rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                <div className="space-y-1 text-center">
-                  {previewSource ? (
+              <div
+                ref={dropZoneRef}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={[
+                  "mt-1 border-2 border-dashed rounded-xl transition-all duration-200",
+                  isDragging
+                    ? "border-blue-400 bg-blue-50 dark:bg-blue-500/10 scale-[1.01]"
+                    : pasteFlash
+                    ? "border-green-400 bg-green-50 dark:bg-green-500/10"
+                    : "border-slate-300 dark:border-slate-700 hover:border-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50",
+                ].join(" ")}
+              >
+                {previewSource ? (
+                  /* ── Preview ── */
+                  <div className="relative flex flex-col items-center p-4 gap-3">
                     <div className="relative">
-                      <img src={previewSource} alt="Bill preview" className="mx-auto h-32 object-contain rounded-md" />
-                      <button 
-                        type="button" 
-                        onClick={handleRemovePhoto} 
+                      <img src={previewSource} alt="Bill preview" className="mx-auto max-h-40 object-contain rounded-lg shadow-md" />
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"
                         title="Remove photo"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                  ) : (
-                    <>
-                      <Upload className="mx-auto h-12 w-12 text-slate-400" />
-                      <div className="flex text-sm text-slate-500 justify-center">
-                        <label className="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                          <span>Select a photo</span>
-                          <input type="file" className="sr-only" accept="image/*" onChange={handlePhotoSelection} disabled={loading} />
-                        </label>
+                    <label className="cursor-pointer text-xs text-blue-600 hover:text-blue-500 font-medium flex items-center gap-1">
+                      <ImagePlus className="w-3.5 h-3.5" />
+                      Replace photo
+                      <input type="file" className="sr-only" accept="image/*" onChange={handlePhotoSelection} disabled={loading} />
+                    </label>
+                  </div>
+                ) : (
+                  /* ── Empty state ── */
+                  <div className="flex flex-col items-center gap-3 px-6 py-6 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      {isDragging
+                        ? <Upload className="w-7 h-7 text-blue-500 animate-bounce" />
+                        : <Upload className="w-7 h-7 text-slate-400" />}
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                        {isDragging ? "Drop to upload" : "Upload bill photo"}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5">Drag &amp; drop, paste, or browse</p>
+                    </div>
+
+                    {/* Action pills */}
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium cursor-pointer hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/30">
+                        <Upload className="w-3.5 h-3.5" />
+                        Browse file
+                        <input type="file" className="sr-only" accept="image/*" onChange={handlePhotoSelection} disabled={loading} />
+                      </label>
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-medium">
+                        <Clipboard className="w-3.5 h-3.5" />
+                        Ctrl+V to paste
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">PNG, JPG up to 10MB (will be compressed)</p>
-                    </>
-                  )}
-                </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-400">PNG, JPG, WEBP · compressed automatically</p>
+                  </div>
+                )}
               </div>
             </div>
           </form>
