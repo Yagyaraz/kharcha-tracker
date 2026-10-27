@@ -12,8 +12,9 @@ export function proxy(request: NextRequest) {
     pathname === "/invite" ||
     pathname.startsWith("/invite/") ||
     pathname.startsWith("/api/invite");
+  const isPublicMenu = pathname === "/menu" || pathname.startsWith("/menu/");
 
-  if (!hasSession && !isLoginPage && !isPublicInvite) {
+  if (!hasSession && !isLoginPage && !isPublicInvite && !isPublicMenu) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -26,6 +27,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf)$).*)",
   ],
 };
